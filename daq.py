@@ -15,6 +15,15 @@ import nidaqmx.system
 #for device in system.devices:
 #    print(device)
 
+def check_device():
+    
+    import nidaqmx.system
+    
+    system = nidaqmx.system.System.local()
+    
+    for dev in system.devices:
+        print(dev)
+
 def acquire(
         task,
         n_samples,
@@ -24,6 +33,12 @@ def acquire(
         acquisition_units = nidaqmx.constants.VoltageUnits.VOLTS,
         terminal_configuration = nidaqmx.constants.TerminalConfiguration.RSE
         ):
+    
+    if not isinstance(voltage_range, tuple):
+        voltage_range = [voltage_range]
+    
+    if not isinstance(physical_channels, tuple):
+        physical_channels = [physical_channels]
     
     chan = []
     
@@ -43,21 +58,73 @@ def acquire(
     
     data = np.zeros((task.number_of_channels, n_samples))
     reader = nidaqmx.stream_readers.AnalogMultiChannelReader(task.in_stream)
-    reader.read_many_sample(data, n_samples)
+    reader.read_many_sample(data, -1)
     
     return (data, task.timing.samp_clk_rate)
 
 
 
 
+
+def continuous_acquire(
+        task,
+        n_samples,
+        physical_channels,
+        sample_frequency,
+        voltage_range,
+        acquisition_units = nidaqmx.constants.VoltageUnits.VOLTS,
+        terminal_configuration = nidaqmx.constants.TerminalConfiguration.RSE,
+        ):
+    
+    data_count = 0
+    
+    if not isinstance(voltage_range, tuple):
+        voltage_range = [voltage_range]
+    
+    if not isinstance(physical_channels, tuple):
+        physical_channels = [physical_channels]
+    
+    chan = []
+    
+    for i in range(len(physical_channels)):
+        chan.append(
+                task.ai_channels.add_ai_voltage_chan(
+                    physical_channel = physical_channels[i],
+                    min_val = voltage_range[i][0],
+                    max_val = voltage_range[i][1],
+                    units = acquisition_units
+                    )
+                )
+            
+        chan[i].ai_term_cfg = terminal_configuration
+    
+    n_channels = task.number_of_channels
+    
+    task.timing.cfg_samp_clk_timing(rate = sample_frequency,
+                                    sample_mode = nidaqmx.constants.AcquisitionType.CONTINUOUS)
+    task.in_stream.input_buf_size = 5 * n_samples
+    
+    data = np.zeros((n_channels, n_samples))
+    
+    try:
+        
+        task.start()
+        
+        while True:
+            
+            data[0:n_channels, 0:n_samples] = np.array(task.read(n_samples))
+            data_count += n_samples
+        
+    except KeyboardInterrupt:
+        
+        task.stop()
+        
+        return (data, task.timing.samp_clk_rate)
+
+
 if __name__ is '__main__':
     
-    import nidaqmx.system
-    
-    system = nidaqmx.system.System.local()
-    
-    for dev in system.devices:
-        print(dev)
+    check_device()
     
 #
 #SampleNumber = 2**16
