@@ -16,6 +16,8 @@ import time
 #for device in system.devices:
 #    print(device)
 
+CAL = 100
+
 def check_device():
     
     import nidaqmx.system
@@ -109,6 +111,72 @@ def acquire(
     return (data, task.timing.samp_clk_rate)
 
 
+def control_p(
+        setpoint,
+        prev_val,
+        signal,
+        p_const
+        ):
+    
+    min_duty = 2.5e-6
+    max_duty = 0.999
+    
+    next_val = prev_val + p_const * (setpoint - signal)
+    next_val = min(next_val, max_duty)
+    next_val = max(next_val, min_duty)
+    
+    return next_val
+
+
+
+def create_control_p(setpoint, p_const):
+
+    min_duty = 2.5e-6
+    max_duty = 0.999
+
+    def internal():
+        
+        next_val = 0
+        while True:    
+            signal = yield next_val
+            next_val = next_val + p_const * (setpoint - signal)
+            next_val = min(next_val, max_duty)
+            next_val = max(next_val, min_duty)
+
+    i = internal()
+    i.send(None)
+    return i
+
+
+class P:
+    
+    def __init__(self, setpoint, p_const):
+        self.setpoint = setpoint
+        self.p_const = p_const
+        self.next_val = 0
+        
+    def calcular(self, x):
+        self.next_val = next_val + p_const * (setpoint - signal)
+        next_val = min(next_val, max_duty)
+        next_val = max(next_val, min_duty)
+    
+
+
+def create_control_pid(setpoint, p_const):
+
+    min_duty = 2.5e-6
+    max_duty = 0.999
+
+    def internal():
+        
+        next_val = 0
+        while True:    
+            signal = yield next_val
+            next_val = next_val + p_const * (setpoint - signal)
+            next_val = min(next_val, max_duty)
+            next_val = max(next_val, min_duty)
+
+    return internal()
 
 
 
@@ -118,19 +186,25 @@ def continuous_acquire(
         sample_frequency,
         task_co = None,
         chan_co = None,
-        stream_co = None
+        stream_co = None,
+        setpoint = None,
+        p_const = None
         ):
     
     print('Acquire')
     
     data_count = 0
     n_channels = task.number_of_channels
+    duty = 0.5
+    
+    signal_vec = np.array([])
+    duty_vec   = np.array([])
     
     task.timing.cfg_samp_clk_timing(
             rate = sample_frequency,
             sample_mode = nidaqmx.constants.AcquisitionType.CONTINUOUS
             )
-    task.in_stream.input_buf_size = 5 * n_samples
+    task.in_stream.input_buf_size = 10 * n_samples
     
     data = np.zeros((n_channels, n_samples))
     
@@ -138,17 +212,44 @@ def continuous_acquire(
         print('Start')
         task.start()
         
+        lazo = create_control_p(setpoint, p_const)
+        
         while True:
-#            
-#            data[0:n_channels, 0:n_samples] = np.array(task.read(n_samples))
-#            data_count += n_samples
             
-            time.sleep(0.5)
-#            stream_co.write_one_sample_pulse_frequency(
-#                    frequency = chan_co.co_pulse_freq,
-#                    duty_cycle = 0.9
-#                    )
-#
+            # Lee datos
+            
+            data[0:n_channels, 0:n_samples] = np.array(task.read(n_samples))
+            data_count += n_samples
+            curr_time = data_count / task.timing.samp_clk_rate
+            
+            control_signal = data.mean()
+            
+            duty = lazo.send(control_signal)
+            
+            #duty = control_p(
+            #        setpoint = setpoint,
+            #        prev_val = duty,
+            #        signal = control_signal,
+            #        p_const = p_const)
+            
+            stream_co.write_one_sample_pulse_frequency(
+                    frequency = chan_co.co_pulse_freq,
+                    duty_cycle = duty
+                    )
+            
+            signal_vec = np.append(signal_vec, control_signal)
+            duty_vec   = np.append(duty_vec, duty)
+            
+            print("t = {:0.1f} s\t duty = {:0.3g}\t T = {:0.4g} C".format(curr_time, duty, control_signal*CAL))
+            
+#            np.append(signal_vec, control_signal)
+#            np.append(duty_vec, duty)
+#            
+#            plt.plot(signal_vec)
+#            plt.plot(duty_vec)
+#            plt.draw()
+#            time.sleep(0.01)
+
 #            time.sleep(0.5)
 #            stream_co.write_one_sample_pulse_frequency(
 #                    frequency = chan_co.co_pulse_freq,
@@ -172,13 +273,13 @@ def continuous_acquire(
 #                            )
 #                    duty = 0.1
 #                print(duty)
-        
+    
     except KeyboardInterrupt:
         
         task.stop()
         if task_co != None: task_co.stop()
         
-        return (data, task.timing.samp_clk_rate)
+        return (data, task.timing.samp_clk_rate, duty_vec, signal_vec)
 
 
 if __name__ is '__main__':
