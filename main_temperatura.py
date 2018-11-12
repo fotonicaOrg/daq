@@ -20,14 +20,30 @@ import time
 
 CAL = 100
 
-ai_channels = ('Dev2/ai0')
-co_channels = ('Dev2/ctr0')
+ai_channels = ('Dev3/ai0')
+co_channels = ('Dev3/ctr0')
 pwm_freq = 100
 pwm_duty_cycle = 0.9
 
 voltage_range = ([-10,10])
 n_samples = 500
 freq = 1000
+
+setpoint = 0.35
+dt = n_samples/freq
+memory_const = 0.25
+
+pid_gain = 1
+pid_tau = 340
+pid_dead_time = 2
+
+(kp, ki, kd) = daq.tune_cohen_coon(
+        controller_type = "pid",
+        gain = pid_gain,
+        tau = pid_tau,
+        dead_time = pid_dead_time
+        )
+kd = 70
 
 with nidaqmx.Task() as task_ai, nidaqmx.Task() as task_co:
     
@@ -50,21 +66,35 @@ with nidaqmx.Task() as task_ai, nidaqmx.Task() as task_co:
     stream_co = nidaqmx.stream_writers.CounterWriter(task_co.out_stream)
     task_co.start()
     
-    (data, real_freq, control_signal, duty) = daq.continuous_acquire(
-                task = task_ai,
-                n_samples = n_samples,
-                sample_frequency = freq,
-                task_co = task_co,
-                stream_co = stream_co,
-                chan_co = chan_co[0],
-                setpoint = 0.35,
-                p_const = 200
-                )
+    pid = daq.PID_Controller(
+        setpoint = setpoint,
+        kp = kp,
+        ki = ki,
+        kd = kd,
+        dt = dt
+        )
+    
+    (data, real_freq, control_signal, duty) = daq.continuous_PID(
+            pid = pid,
+            task_ai = task_ai,
+            task_co = task_co,
+            stream_co = stream_co,
+            chan_co = chan_co[0],
+            sample_frequency = freq,
+            n_samples = n_samples,
+            plot = False
+            )
 
 time = np.arange(len(control_signal)) / real_freq * n_samples
 
-plt.plot(time, control_signal)
-plt.plot(time, duty)
+plt.subplot(2,1,1)
+plt.plot(time, control_signal * daq.CAL, label = "Temperatura")
+plt.ylabel("Temperatura [Celsius]")
+
+plt.subplot(2,1,2)
+plt.plot(time, duty, label = "Duty cycle")
+plt.ylabel("Duty cycle")
+plt.xlabel('Tiempo [s]')
 
 #
 #plt.plot(time, data[0,:])
