@@ -180,7 +180,89 @@ def create_control_pid(setpoint, p_const):
 
 
 
+def single_acquire(
+        task,
+        n_samples,
+        sample_frequency,
+        packet_size = 1000
+        ):
+    
+    print('Acquire')
+    
+    data_count = 0
+    n_channels = task.number_of_channels
+        
+    task.timing.cfg_samp_clk_timing(
+            rate = sample_frequency,
+            sample_mode = nidaqmx.constants.AcquisitionType.CONTINUOUS
+            )
+    task.in_stream.input_buf_size = 10 * packet_size
+    
+    data = np.zeros((n_channels, n_samples))
+    
+    try:
+        print('Start')
+        task.start()
+        
+        while data_count < n_samples:
+            
+            # Lee datos
+            
+            data[0:n_channels, data_count:data_count+packet_size] = np.array(task.read(packet_size))
+            data_count += n_samples
+            curr_time = data_count / task.timing.samp_clk_rate
+    
+    except KeyboardInterrupt:
+        
+        task.stop()
+        if task_co != None: task_co.stop()
+        
+        return (data, task.timing.samp_clk_rate)
+
+
 def continuous_acquire(
+        task,
+        n_samples,
+        sample_frequency,
+        task_co = None,
+        chan_co = None,
+        stream_co = None
+        ):
+    
+    print('Acquire')
+    
+    data_count = 0
+    n_channels = task.number_of_channels
+    
+    task.timing.cfg_samp_clk_timing(
+            rate = sample_frequency,
+            sample_mode = nidaqmx.constants.AcquisitionType.CONTINUOUS
+            )
+    task.in_stream.input_buf_size = 10 * n_samples
+    
+    data = np.zeros((n_channels, n_samples))
+    
+    try:
+        print('Start')
+        task.start()
+        
+        while True:
+            
+            # Lee datos
+            
+            data[0:n_channels, 0:n_samples] = np.array(task.read(n_samples))
+            data_count += n_samples
+            curr_time = data_count / task.timing.samp_clk_rate
+    
+    except KeyboardInterrupt:
+        
+        task.stop()
+        if task_co != None: task_co.stop()
+        
+        return (data, task.timing.samp_clk_rate)
+    
+
+def continuous_control_loop(
         task,
         n_samples,
         sample_frequency,
