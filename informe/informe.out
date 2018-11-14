@@ -1,6 +1,0 @@
-\BOOKMARK [1][-]{section.1}{Introducci\363n}{}% 1
-\BOOKMARK [1][-]{section.2}{Desarrollo de la aplicaci\363n de adquisici\363n}{}% 2
-\BOOKMARK [1][-]{section.3}{Caracterizaci\363n de la placa de adquisici\363n}{}% 3
-\BOOKMARK [1][-]{section.4}{Control de temperatura}{}% 4
-\BOOKMARK [2][-]{subsection.4.1}{Implementaci\363n de un lazo de control}{section.4}% 5
-\BOOKMARK [2][-]{subsection.4.2}{Implementaci\363n de un lazo de control PID}{section.4}% 6
