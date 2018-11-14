@@ -375,6 +375,7 @@ class PID_Controller:
         self.dt = dt
         self.memory_const = memory_const
         
+        self.last_feedback_value = 0
         self.last_error = 0
         self.p_term = 0
         self.i_term = 0
@@ -382,15 +383,33 @@ class PID_Controller:
         self.min_val = 2.5e-6
         self.max_val = 0.999
         
+        self.pid_flag_threshold = 2
+        self.pid_flag = False
+        
     def calculate(self, feedback_value):
+        
+        if not self.pid_flag and np.abs(feedback_value - self.setpoint) < self.pid_flag_threshold:
+            self.pid_flag = True
+        
         error = self.setpoint - feedback_value
+        
+        if self.pid_flag:
+    
+            self.p_term = self.kp * error
+            self.i_term = self.i_term * self.memory_const + self.ki * error * self.dt
+            self.d_term = self.kd * ((error - self.last_error)/self.dt)
+            self.last_error = error
+    
+            return self.limit_value(self.p_term + self.i_term + self.d_term)
 
-        self.p_term = self.kp * error
-        self.i_term = self.i_term * self.memory_const + self.ki * error * self.dt
-        self.d_term = self.kd * ((error - self.last_error)/self.dt)
-        self.last_error = error
-
-        return self.limit_value(self.p_term + self.i_term + self.d_term)
+        else:
+            
+            if error > 0:
+                return self.max_val
+            else:
+                return self.min_val
+            
+            
     
     def limit_value(self, value):
         print(value)
@@ -498,18 +517,19 @@ def continuous_PID(
             
             if plot:
                 
-                plot_axes[0,1].clear()
-                plot_axes[0,1].plot(time_vec, signal_vec, label = 'Feedback signal')
-                plt.xlabel('Tiempo')
-                plt.title('Feedback signal')
+                plt.subplot(2,1,1)
+                plt.gca().clear()
+                plt.plot(time_vec, signal_vec, label = 'Feedback signal')
+                plt.ylabel('Feedback signal')
 
-                plot_axes[0,2].clear()
-                plot_axes[0,2].plot(time_vec, duty_vec, label = 'Duty cycle')
+                plt.subplot(2,1,2)
+                plt.gca().clear()
+                plt.plot(time_vec, duty_vec, label = 'Duty cycle')
                 plt.xlabel('Tiempo')
-                plt.title('Duty cycle')
+                plt.ylabel('Duty cycle')
                 
                 plt.show()
-                plt.pause(0.001)
+                plt.pause(0.005)
             
             
     except KeyboardInterrupt:

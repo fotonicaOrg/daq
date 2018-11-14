@@ -26,10 +26,10 @@ pwm_freq = 100
 pwm_duty_cycle = 0.9
 
 voltage_range = ([-10,10])
-n_samples = 500
+n_samples = 1000
 freq = 1000
 
-setpoint = 0.35
+setpoint = 0.5
 dt = n_samples/freq
 memory_const = 0.25
 
@@ -82,7 +82,7 @@ with nidaqmx.Task() as task_ai, nidaqmx.Task() as task_co:
             chan_co = chan_co[0],
             sample_frequency = freq,
             n_samples = n_samples,
-            plot = False
+            plot = True
             )
 
 time = np.arange(len(control_signal)) / real_freq * n_samples
