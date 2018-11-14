@@ -12,12 +12,15 @@ data = np.loadtxt('aliasing.txt', delimiter = '\t')
 f_in = data[:,0]
 f_out = data[:,1]
 
+f_sample = 10000
+
+x = f_in/f_sample
+y = f_out/f_sample
+
 plt.plot(
-        f_in,
-        f_out,
-        label = 'Mediciones',
+        x,
+        y,
         ls = '',
         marker = 'o')
-plt.xlabel('Frecuencia real [Hz]')
-plt.ylabel('Frecuencia adquirida [Hz]')
-plt.legend()
+plt.xlabel('$f_{r}/f_{s} $')
+plt.ylabel('$f_{m}/f_{s}$')

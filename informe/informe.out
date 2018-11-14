@@ -1,0 +1,6 @@
+\BOOKMARK [1][-]{section.1}{Introduccion}{}% 1
+\BOOKMARK [1][-]{section.2}{Desarrollo de la aplicacion}{}% 2
+\BOOKMARK [1][-]{section.3}{Caracterizacion de la placa de adquisicion}{}% 3
+\BOOKMARK [1][-]{section.4}{Control de temperatura}{}% 4
+\BOOKMARK [2][-]{subsection.4.1}{Implementaci un lazo de control}{section.4}% 5
+\BOOKMARK [2][-]{subsection.4.2}{Implementaci un lazo de control PID}{section.4}% 6
