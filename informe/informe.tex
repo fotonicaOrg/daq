@@ -9,10 +9,31 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage[font=small,labelfont=bf]{caption}
-\usepackage[colorlinks=true]{hyperref}
 
 \usepackage{booktabs}
 \usepackage{multirow}
+
+\usepackage{hyperref}
+\hypersetup{
+    bookmarks=true,         % show bookmarks bar?
+    unicode=false,          % non-Latin characters in Acrobat’s bookmarks
+    pdftoolbar=true,        % show Acrobat’s toolbar?
+    pdfmenubar=true,        % show Acrobat’s menu?
+    pdffitwindow=false,     % window fit to page when opened
+    pdfstartview={FitH},    % fits the width of the page to the window
+    pdftitle={My title},    % title
+    pdfauthor={Author},     % author
+    pdfsubject={Subject},   % subject of the document
+    pdfcreator={Creator},   % creator of the document
+    pdfproducer={Producer}, % producer of the document
+    pdfkeywords={keyword1, key2, key3}, % list of keywords
+    pdfnewwindow=true,      % links in new PDF window
+    colorlinks=true,       % false: boxed links; true: colored links
+    linkcolor=blue,          % color of internal links (change box color with linkbordercolor)
+    citecolor=green,        % color of links to bibliography
+    filecolor=magenta,      % color of file links
+    urlcolor=cyan           % color of external links
+}
 
 \title{Caracterización de componentes electrónicos utilizando una placa de audio}
 \date{\today}
@@ -32,12 +53,19 @@
 	
 	Las funciones de usuario final se encargaron de la configuración de los canales de entrada analógicos y salidas de contadores, de la adquisición de una muestra finita de largo arbitrario, y de la adquisición continua de datos en simultáneo con la generación de pulsos de anchos variables. En la figura \ref{fig:flujo_software} se muestra un diagrama de flujo de una ejecución típica para la adquisición y generación de pulsos en modo continuo. Asimismo la biblioteca incluyó los elementos necesarios para la implementación del lazo de control que se discutirá en la sección \ref{sec:control_temperatura}, a saber, las estructuras que manejan la entrada de datos de sensado, que calculan la señal de error y que generan la señal de hacia el actuador.
 	
+<<<<<<< HEAD
+	El la adquisición de lectura y escritura se basa en un bucle que en cada iteración adquiere una ventana de datos con un número fijo de muestras, las procesa y por último escribe la configuración de los pulsos de salida, esto es, su frecuencia de repetición y su ancho. Para el funcionamiento de este esquema se asume que el tiempo de ejecución de las instrucciones dentro de cada iteración es menor al tiempo que demora la adquisición de las muestras, de manera que no se produzcan sobrecargas en el \emph{buffer} de la placa de adquisición. Bajo el modo de disparo único, las sucesivas ventanas temporales se concatenan en una variable de salida preinicializada, y el bucle finaliza cuando el número de muestras adquiridas alcanza el número total configurado. Bajo el modo de ejecucuón continua, las ventanas temporales se sobreescriben, y el bucle finaliza cuando el usuario interrumpe manualmente la ejecución del programa con el comando de teclado. En ambos casos, la finalización del bucle desencadena la etapa de cierre de comunicaciones y, eventualmente, el gráfico y guardado de los datos.
+	
+	\begin{figure}[!ht] 
+        \centering
+        \includegraphics[height=.9\textheight]{flujo_software.pdf}
+=======
 	\begin{figure}[h!] 
         \centering
         \includegraphics[height=.95\textheight]{figs/flujo_software.pdf}
+>>>>>>> 890084a0da6e0dcca0ab732d2c5a01095d4789d3
         \caption{Diagrama de flujo para la aplicación de adquisición y generación de pulsos en modo de disparo único y ejecución continua.}
         \label{fig:flujo_software}
- 
     \end{figure}
 
 	
@@ -49,20 +77,20 @@ Se realizó una caracterización de la placa de adquisición en la que se propus
 
 En primer lugar, para observar el efecto que produce submuestrear una señal, se alimento una entrada analógica de la placa DAQ con una señal sinusoidal de frecuencia controlada producida por un generador de funciones. Se fijó la frecuencia de muestreo de la placa en $f_s$ = 10 kHz y se barrió la frecuencia de la señal de entrada $f_r$ entre valores mucho menores y mucho mayores a dicha frecuencia. El tiempo de integración se eligió grande, de manera de minimizar la introducción de frecuencias espúreas en la señal dadas por el tamaño de la ventana temporal. Luego, usando un algoritmo de tranformada rápida de Fourier (FFT), se obtuvo para cada frecuencia de entrada su frecuencia medida $f_m$, a partir del valor máximo del módulo de la FFT. En la figura \ref{fig:aliasing} se muestran los resultados de este experimento. Para frecuencias menores a la frecuencia de Nyquist ($f_r/f_s = 0.5$) se observa como la frecuencia medida se corresponde con la de la señal de entrada. A partir de este punto, se puede ver como el algoritmo devuelve de manera consistente valores menores a la frecuencia de Nyquist mostrando el fenómeno de aliasing. En particular, el punto donde $f_r = f_s$ devuelve un valor de frecuencia nulo, que se corresponde con estar muestreando la señal en el mismo punto del período cada vez.
 
-\begin{figure}[h!]
+\begin{figure}[!ht]
 \centering
-\includegraphics[width=\columnwidth]{figs/alliasing.png}
-\label{fig:aliasing}
+\includegraphics[width=\textwidth]{figs/alliasing.png}
 \caption{Frecuencia medida en función de la frecuencia real comparadas con la tasa de muestreo.}
+\label{fig:aliasing}
 \end{figure}
 
 Para entender la forma en que la placa multiplexa las señales, se diseño un experimento en el que se busca medir cual es la relación entre los tiempos en los que se efectúa la adquisición para cada canal analógico. Para hacer esto se utilizó un generador de funciones para producir una rampa de tensión de igual frecuencia a la adquisición de la placa. La misma señal se alimentó varios canales analógicos de la placa. Bajo esta disposición, el valor de tensión medido para cada canal codifica el instante en el que se produjo dicha medición, ya que la señal de entrada se encuentra variando de manera rápida y controlada dentro del tiempo en que la placa está realizando el multiplexado de las señales. 
 
-\begin{figure}[h!]
+\begin{figure}[!ht]
 \centering
-\includegraphics[width=\columnwidth]{figs/multiplex.png}
-\label{fig:multiplex}
+\includegraphics[width=\textwidth]{figs/multiplex.png}
 \caption{Caracterización del multiplexor midiendo una rampa de tensión de manera simultanea en tres canales analógicos.}
+\label{fig:multiplex}
 \end{figure}
 
 
@@ -70,30 +98,145 @@ Un resultado típico de este experimento donde se utilizaron tres canales analó
 
 Para finalizar la caracterización de la placa se midió la influencia del \textit{settling time} en las mediciones. Para hacer esto se configuraron dos canales analógicos consecutivos de la placa en las escalas de medición extremas (-200 mV a 200 mV y -10 V a 10 V). Luego se conectó el primero a tierra y el segundo a la referencia de 5 V de la misma placa. A continuación se realizó un barrido de frecuencias de adquisición registrando la tensión detectada en cada canal. El resultado de este experimento se muestra en las figuras \ref{fig:settling1} y \ref{fig:settling2}, donde se graficó la diferencia de tensión medida respecto de la esperada para cada canal. Se observa para los dos casos que a medida que la frecuencia aumenta (y luego se cambia cada vez más rápido de un canal a otro) se obtiene una pequeña señal residual en la dirección de la señal del canal vecino (positiva para el conectado a tierra y negativa para el de 5 V). Esto muestra que la señal está afectada, a frecuencias altas, por el tiempo que tarda la placa en preparar el acondicionamiento de la señal previo a su digitalización.  
 
-\begin{figure}[h!]
+\begin{figure}[!ht]
 \centering
-\includegraphics[width=\columnwidth]{figs/settling0V.png}
-\label{fig:settling1}
+\includegraphics[width=\textwidth]{figs/settling0V.png}
 \caption{Señal medida en una entrada conectada a tierra, configurada en $\pm$200 mV contigua a otra configurada en $\pm$10 V en función de la frecuencia de muestreo.}
+\label{fig:settling1}
 \end{figure}
 
-\begin{figure}[h!]
+\begin{figure}[!ht]
 \centering
-\includegraphics[width=\columnwidth]{figs/settling5V.png}
-\label{fig:settling2}
+\includegraphics[width=\textwidth]{figs/settling5V.png}
 \caption{Variación de la tensión medida en una entrada conectada a 5 V, configurada en $\pm$10 V contigua a otra configurada en $\pm$200 mV en función de la frecuencia de muestreo.}
+\label{fig:settling2}
 \end{figure}
 
-
+\clearpage
 \section{Control de temperatura}
 \label{sec:control_temperatura}
 
-\subsection{Implementación de un lazo de control}
+Se construyó una planta con actuadores y sensores de temperatura con el
+objetivo de ser utilizada para implementar distintos lazos de control,
+en la figura \ref{fig:planta} se muestra un diagrama en bloques de la
+misma.  Se utilizó como actuador una celda \emph{peltier} modelo
+TEC1-12706 controlada mediante una señal PWM cuyo ciclo de trabajo podía
+ser modificado por la placa de adquisición utilizada. Se utilizó como
+sensor de temperatura el integrado LM35, su señal de salida es lineal y
+cada grado Celcius equivale a \SI{10}{\mV}. 
 
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.8\textwidth]{figs/Planta}
+\caption{Diagrama en bloques de la planta implementada.}
+\label{fig:planta}
+\end{figure}
+
+\subsection{Implementación de un lazo de control}
+Con el objetivo de mantener constante la
+señal de temperatura medida en un valor de refencia establecido se
+implentó un lazo de control con la siguiente lógica,
+\begin{equation*}
+\text{duty cycle (t+1)} = \text{duty cycle (t)} + a * (\text{temp SET}
+- \text{temp (t)})
+\end{equation*}
+
+En las figuras \ref{fig:lazo_duty} y \ref{fig:lazo_temp} se muestra la
+evolución temporal de las señales de ciclo de trabajo del actuador y de
+tempratura medida para cuatro valores distintos de la constante de
+proporcionalidad \emph{a}.
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=\textwidth]{figs/lazo_duty}
+\caption{Evolución temporal de la señal de ciclo de trabajo del actuador
+de temperatura para distintos valores de la constante de
+proporcionalidad \emph{a}.}
+\label{fig:lazo_duty}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=\textwidth]{figs/lazo_temp}
+\caption{Evolución temporal de la señal de temperatura para distintos
+valores de la constante de proporcionalidad \emph{a}.}
+\label{fig:lazo_temp}
+\end{figure}
+
+\clearpage
 \subsection{Implementación de un lazo de control PID}
 
+Se implementó un controloador del tipo PID para mantener estable la
+señal de temperatura de la planta utilizada. En la figura
+\ref{fig:PID_diagrama} se muestra un diagrama en bloques del control
+implementado.  Para encontrar los parámetros que optimizan el
+funcionamiento del control PID se utilizó el método de ajuste
+\emph{Cohen-Coon}. El mismo consiste en excitar la planta con una señal
+escalón y medir de la respuesta de la misma ciertos parámetros
+característicos como se muestra en la figura
+\ref{fig:CohenCoon_StepTest}. Una vez obtenidos los parámetros
+necesarios, las distintas constantes de proporcionalidad de cada término
+del control PID se ajustan siguiendo las reglas que se muestran en la
+figura \ref{fig:CohenCoon_Rules}.
 
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.8\textwidth]{figs/PID_diagrama}
+\caption{Diagrama en bloques de un controlador PID en un lazo realimentado.}
+\label{fig:PID_diagrama}
+\end{figure}
 
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.8\textwidth]{figs/CohenCoon_StepTest}
+\caption{Prueba del escalón para ajuste de parámetros PID mediante el
+\label{fig:CohenCoon_StepTest}
+método \emph{Cohen-Coon}}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=\textwidth]{figs/CohenCoon_Rules}
+\caption{Reglas de ajuste del método \emph{Cohen-Coon} para los
+\label{fig:CohenCoon_Rules}
+distintos tipos de controladores.}
+\end{figure}
+
+Se implementó el controlador PID en tres etapas, primero solo se utilizó
+un control proporcional (P), luego se agregó un término integral al
+mismo (PI) el cual permitió reducir el error estacionario del controlador
+proporcional y finalmente se agregó un término derivativo (PID) con el
+objetivo de disminuir el sobrepico inicial en la señal de temperatura.
+En esta última modificación no se obtuvieron los resultados deseados ya
+que el sobre pico no disminuyó en su valor, solo se tardó más tiempo en
+alcanzar el valor de referencia de temperatura.
+Los resultados obtenidos se muestran en las figuras \ref{fig:P_temp},
+\ref{fig:PI_temp} y \ref{fig:PID_temp} respectivamente.
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.8\textwidth]{figs/P_temp}
+\caption{Evolución temporal de la señal de temperatura utilizando
+un controlador de tipo proporcional (P), registrada para tres valores
+disintos de la constante de proporcionalidad.}
+\label{fig:P_temp}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.8\textwidth]{figs/PI_temp}
+\caption{Evolución temporal de la señal de temperatura cuando se agrega
+un término integral al controlador (PI).}
+\label{fig:PI_temp}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.8\textwidth]{figs/PID_temp}
+\caption{Evolución temporal de la señal de temperatura cuando se agrega
+un término derivativo al controlador (PID).}
+\label{fig:PID_temp}
+\end{figure}
 
 \clearpage
 
