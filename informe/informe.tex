@@ -62,7 +62,7 @@ Para implementar el lazo de control se utilizó una placa de adquisición \emph{
         \label{fig:flujo_software}
     \end{figure}	
 	
-	El la adquisición de lectura y escritura se basa en un bucle que en cada iteración adquiere una ventana de datos con un número fijo de muestras, las procesa y por último escribe la configuración de los pulsos de salida, esto es, su frecuencia de repetición y su ancho. Para el funcionamiento de este esquema se asume que el tiempo de ejecución de las instrucciones dentro de cada iteración es menor al tiempo que demora la adquisición de las muestras, de manera que no se produzcan sobrecargas en el \emph{buffer} de la placa de adquisición. Bajo el modo de disparo único, las sucesivas ventanas temporales se concatenan en una variable de salida preinicializada, y el bucle finaliza cuando el número de muestras adquiridas alcanza el número total configurado. Bajo el modo de ejecucuón continua, las ventanas temporales se sobreescriben, y el bucle finaliza cuando el usuario interrumpe manualmente la ejecución del programa con el comando de teclado. En ambos casos, la finalización del bucle desencadena la etapa de cierre de comunicaciones y, eventualmente, el gráfico y guardado de los datos.
+	La adquisición de lectura y escritura se basa en un bucle que en cada iteración adquiere una ventana de datos con un número fijo de muestras, las procesa y por último escribe la configuración de los pulsos de salida, esto es, su frecuencia de repetición y su ancho. Para el funcionamiento de este esquema se asume que el tiempo de ejecución de las instrucciones dentro de cada iteración es menor al tiempo que demora la adquisición de las muestras, de manera que no se produzcan sobrecargas en el \emph{buffer} de la placa de adquisición. Bajo el modo de disparo único, las sucesivas ventanas temporales se concatenan en una variable de salida preinicializada, y el bucle finaliza cuando el número de muestras adquiridas alcanza el número total configurado. Bajo el modo de ejecucuón continua, las ventanas temporales se sobreescriben, y el bucle finaliza cuando el usuario interrumpe manualmente la ejecución del programa con el comando de teclado. En ambos casos, la finalización del bucle desencadena la etapa de cierre de comunicaciones y, eventualmente, el gráfico y guardado de los datos.
 	
 	El la adquisición de lectura y escritura se basa en un bucle que en cada iteración adquiere una ventana de datos con un número fijo de muestras, las procesa y por último escribe la configuración de los pulsos de salida, esto es, su frecuencia de repetición y su ancho. Para el funcionamiento de este esquema se asume que el tiempo de ejecución de las instrucciones dentro de cada iteración es menor al tiempo que demora la adquisición de las muestras, de manera que no se produzcan sobrecargas en el \emph{buffer} de la placa de adquisición. Bajo el modo de disparo único, las sucesivas ventanas temporales se concatenan en una variable de salida preinicializada, y el bucle finaliza cuando el número de muestras adquiridas alcanza el número total configurado. Bajo el modo de ejecucuón continua, las ventanas temporales se sobreescriben, y el bucle finaliza cuando el usuario interrumpe manualmente la ejecución del programa con el comando de teclado. En ambos casos, la finalización del bucle desencadena la etapa de cierre de comunicaciones y, eventualmente, el gráfico y guardado de los datos.	
 
@@ -134,13 +134,13 @@ señal de temperatura medida en un valor de refencia establecido se
 implentó un lazo de control con la siguiente lógica,
 \begin{equation*}
 \text{duty cycle (t+1)} = \text{duty cycle (t)} + a * (\text{temp SET}
-- \text{temp (t)})
+- \text{temp (t)}).
 \end{equation*}
 
 En las figuras \ref{fig:lazo_duty} y \ref{fig:lazo_temp} se muestra la
 evolución temporal de las señales de ciclo de trabajo del actuador y de
 tempratura medida para cuatro valores distintos de la constante de
-proporcionalidad \emph{a}.
+proporcionalidad \emph{a}. Se observa que el lazo estabiliza correctamente para los valores extremos del parámetro de control. Para $a$ pequeño, se observa una oscilación amortiguada alrededor de la temperatura de referencia que estabiliza lentamente al valor deseado. Para el vaso de $a \gg 1$ el filtro se comporta como un lazo ON/OFF. La estabilización es más rápida, pero las oscilaciones no son amortiguadas, obteniendo como como resultado variaciones en la temperatura de alrededor de medio grado centígrado.
 
 \begin{figure}[!h]
 \centering
@@ -204,7 +204,7 @@ mismo (PI), el cual permitió reducir el error estacionario del controlador
 proporcional, y finalmente se agregó un término derivativo (PID) con el
 objetivo de disminuir el sobrepico inicial en la señal de temperatura. Para implementar el término diferencial se computó la derivada numérica entre dos adquisiciones consecutivas de la señal sensada, mientras que para implementar el término integral $I$ se utilizó la relación
 \begin{equation}
-	I_{k+1} = \alpha I_k + K_i e_k
+	I_{k+1} = \alpha I_k + K_i e_k,
 \end{equation}
 donde $I_k$ y $e_k$ son respectivamente el término integral y la señal de error en el paso $k$, $K_i$ es la ganancia del término integral y $\alpha<1$ es una constante que regula el tiempo de integración, y que fue tomada igual a \SI{0.25}{} en todo nuestro trabajo. Los resultados obtenidos para los tres lazos mencionados se muestran en las figuras \ref{fig:P_temp}, \ref{fig:PI_temp} y \ref{fig:PID_temp}.
 
